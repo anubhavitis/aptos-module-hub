@@ -1,7 +1,10 @@
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
-import "./App.css";
-import { join } from "@tauri-apps/api/path";
+// import { join } from "@tauri-apps/api/path";
+import Home from "./pages/Home";
+import Navbar from "./components/Navbar";
 
 function App() {
   const [pkgName, setPkgName] = useState("");
@@ -40,8 +43,13 @@ function App() {
   }
 
   return (
-    <div>
-      <div>
+    <BrowserRouter>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Home />} />
+      </Routes>
+
+      {/* <div>
         <img
           src="../public/aptos.png"
           alt="Aptos Banner"
@@ -123,8 +131,8 @@ function App() {
             <p> {hostingResponse} </p>
           </div>
         )}
-      </div>
-    </div>
+      </div> */}
+    </BrowserRouter>
   );
 }
 
