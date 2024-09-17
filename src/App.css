@@ -24,3 +24,9 @@
 .font-instrument {
   font-family: "InstrumentSerif-Italic", serif;
 }
+
+.bg__glass {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
