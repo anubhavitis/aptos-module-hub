@@ -1,24 +1,10 @@
 use serde::{Deserialize, Serialize};
 use serde_yaml;
 use std::fs;
-use std::io::{self, Error, ErrorKind, Read};
-use std::{collections::HashMap, fs::File};
+use std::fs::File;
+use std::io::{Error, ErrorKind, Read};
+use std::path::PathBuf;
 use toml::{Table, Value};
-
-pub const APTOS_DEVNET_PATH: &str = "../../aptos/module-hub/backend/aptos-devnet";
-
-/*
----
-profiles:
-  default:
-    network: Devnet
-    private_key: "0x79896482ce425f973517a18c64fb084b2eb08838fa1508f7742aff6254d2dda6"
-    public_key: "0x277373d70d3d385255f39c69f7251f07939d68af430c7dbf3933038f05d63915"
-    account: c84d15d68d84a7daf2a3a63f628b38a0e6b5b483f8667d4bd21f1a8a5349a1c0
-    rest_url: "https://fullnode.devnet.aptoslabs.com"
-    faucet_url: "https://faucet.devnet.aptoslabs.com"
-
-*/
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Profiles {
@@ -40,7 +26,7 @@ struct Profile {
     faucet_url: String,
 }
 
-fn read_yaml(file_path: &str) -> Result<Profiles, serde_yaml::Error> {
+fn read_yaml(file_path: &PathBuf) -> Result<Profiles, serde_yaml::Error> {
     let mut file = File::open(file_path).expect("Unable to open file");
     let mut contents = String::new();
     file.read_to_string(&mut contents)
@@ -49,8 +35,8 @@ fn read_yaml(file_path: &str) -> Result<Profiles, serde_yaml::Error> {
     Ok(profiles)
 }
 
-pub fn get_devnet_account() -> Result<String, Error> {
-    let yaml_loc = format!("{}/.aptos/config.yaml", APTOS_DEVNET_PATH);
+pub fn get_devnet_account(path: &PathBuf) -> Result<String, Error> {
+    let yaml_loc = path.join(".aptos").join("config.yaml");
     let yaml_resp = read_yaml(&yaml_loc);
     match yaml_resp {
         Ok(profiles) => {
@@ -140,11 +126,11 @@ pub fn add_aptos_framework_dependecies(toml: &mut Value) -> Result<(), Error> {
     Ok(())
 }
 
-pub fn edit_move_toml(pkg_name: String) -> Result<bool, Error> {
-    let account_address = get_devnet_account().expect("failed to get account address");
+pub fn edit_move_toml(path: &PathBuf, pkg_name: String) -> Result<bool, Error> {
+    let account_address = get_devnet_account(path).expect("failed to get account address");
 
-    let toml_path = format!("{}/{}/Move.toml", APTOS_DEVNET_PATH, pkg_name);
-    println!("{}", toml_path);
+    let toml_path = path.join(pkg_name).join("Move.toml");
+    println!("toml Path is {:?}", toml_path);
 
     let file = fs::read_to_string(toml_path.clone()).expect("Failed to open the file");
     let mut toml_parsed: Value = file.parse().expect("Failed to parse toml file");

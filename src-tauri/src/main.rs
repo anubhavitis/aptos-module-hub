@@ -13,9 +13,6 @@ Use aptos cli binary from here:
 https://github.com/aptos-labs/aptos-core/releases/tag/aptos-cli-v4.2.0
 
 for macos, you'll have to build your own
-
-For local path:
-let somepath = app.path_resolver().app_local_data_dir()
 */
 
 fn create_account(path: &PathBuf, account: String) {
@@ -32,10 +29,8 @@ fn create_account(path: &PathBuf, account: String) {
     }
 
     println!("Creating .aptos directory in {} path", account);
-    let output = shell::cmd_handler_with_prompt(
-        "aptos init --network ".to_string() + &account,
-        account_dir.as_path().to_str().unwrap().to_string(),
-    );
+    let output =
+        shell::cmd_handler_with_prompt("aptos init --network ".to_string() + &account, account_dir);
     println!("Command output: {:?}", String::from_utf8_lossy(&output));
 }
 
