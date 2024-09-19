@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import "./App.css";
-import { join } from "@tauri-apps/api/path";
 
 function App() {
   const [pkgName, setPkgName] = useState("");
@@ -43,7 +42,7 @@ function App() {
     <div>
       <div>
         <img
-          src="../public/aptos.png"
+          src="../aptos.png"
           alt="Aptos Banner"
           style={{ backgroundColor: "black", width: "100%" }}
         />

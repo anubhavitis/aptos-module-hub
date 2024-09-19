@@ -1,10 +1,34 @@
 use crate::devnet;
+use std::{io::Write, process::Command};
 
 pub const APTOS_MAINNET_PATH: &str = "../../aptos/module-hub/backend/aptos-prod";
 pub const APTOS_DEVNET_PATH: &str = "../../aptos/module-hub/backend/aptos-devnet";
 
+pub fn cmd_handler_with_prompt(command: String, path: String) -> Vec<u8> {
+    let mut child = Command::new("sh")
+        .current_dir(path)
+        .arg("-c")
+        .arg(command)
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .spawn()
+        .expect("Failed to spawn command");
+
+    child
+        .stdin
+        .as_mut()
+        .unwrap()
+        .write_all(b"\n")
+        .expect("Failed to write to stdin");
+
+    let output = child
+        .wait_with_output()
+        .expect("Failed to wait for command");
+    let output = output.stdout;
+    output
+}
+
 pub fn cmd_handler(command: String, path: String) -> Vec<u8> {
-    use std::process::Command;
     let output = Command::new("sh")
         .current_dir(path)
         .arg("-c")
