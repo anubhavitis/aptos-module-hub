@@ -101,7 +101,7 @@ pub fn remove_existing_aptos_dependency(toml: &mut Value) -> Result<(), Error> {
 
 pub fn add_aptos_framework_dependecies(toml: &mut Value) -> Result<(), Error> {
     // if AptosFramework in dependencies, remove it.
-    remove_existing_aptos_dependency(toml);
+    remove_existing_aptos_dependency(toml).unwrap();
 
     let mut injection_value = Value::Table(Table::new());
     injection_value.as_table_mut().unwrap().insert(

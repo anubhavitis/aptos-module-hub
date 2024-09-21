@@ -29,6 +29,12 @@ pub fn cmd_handler_with_prompt(command: String, path: PathBuf) -> Vec<u8> {
 }
 
 pub fn cmd_handler(command: String, path: PathBuf) -> Vec<u8> {
+    dbg!(
+        "Executing command: {}",
+        command.clone(),
+        " in path: {:?}",
+        path.clone()
+    );
     let output = Command::new("sh")
         .current_dir(path)
         .arg("-c")
