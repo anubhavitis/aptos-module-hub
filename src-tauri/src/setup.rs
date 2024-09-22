@@ -24,10 +24,10 @@ fn create_account(path: &PathBuf, account: String) {
 fn install_brew() {
     let output = shell::cmd_handler("brew --version".to_string(), PathBuf::new());
     let output_str = String::from_utf8_lossy(&output);
-    // if "command not found" in output_str
 
+    dbg!(output_str.clone());
     if output_str.contains("command not found") {
-        println!("Installing brew");
+        println!("since brew not found, installing brew");
         let command = r#"/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)""#;
         let output = shell::cmd_handler(command.to_string(), PathBuf::new());
         println!("Command output: {:?}", String::from_utf8_lossy(&output));
@@ -39,10 +39,10 @@ fn install_brew() {
 fn install_aptos() {
     let output = shell::cmd_handler("aptos --version".to_string(), PathBuf::from("/"));
     let output_str = String::from_utf8_lossy(&output);
-    // if "command not found" in output_str
 
+    dbg!(output_str.clone());
     if output_str.contains("command not found") {
-        println!("Installing aptos");
+        println!("Since aptos not found, installing aptos");
         install_brew();
         let output = shell::cmd_handler("brew install aptos".to_string(), PathBuf::from("/"));
         println!("Command output: {:?}", String::from_utf8_lossy(&output));
@@ -52,8 +52,8 @@ fn install_aptos() {
 }
 
 pub fn machine_setup(path: &PathBuf) {
+    install_aptos();
     create_account(path, "devnet".to_string());
     println!("#########\n\n########");
     create_account(path, "mainnet".to_string());
-    install_aptos();
 }
