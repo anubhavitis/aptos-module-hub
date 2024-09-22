@@ -1,32 +1,16 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-
+import { Toaster } from "sonner";
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
-// import { join } from "@tauri-apps/api/path";
 import Home from "./pages/Home";
 import Navbar from "./components/Navbar";
+import ModuleInteraction from "./pages/ModuleInteraction";
 
 function App() {
   const [pkgName, setPkgName] = useState("");
   const [account, setAccount] = useState("");
-  const [modules, setModules] = useState<string[]>([]);
   const [modulesDisplay, setmodulesDisplay] = useState<string>("none");
   const [hostingResponse, setHostingResponse] = useState("");
-
-  async function getModule() {
-    // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-    try {
-      const resp: string[] = await invoke("account_modules", { account });
-      console.log(resp);
-
-      let respModules: string[] = resp[1].split(",");
-      setPkgName(resp[0]);
-      setModules(respModules);
-    } catch (error) {
-      console.error("Error executing shell command:", error);
-      setPkgName("Failed to execute shell command.");
-    }
-  }
 
   async function hostToDevnetHandler() {
     console.log(`account: ${account} pkg_name: ${pkgName}`);
@@ -44,10 +28,14 @@ function App() {
 
   return (
     <BrowserRouter>
+      <Toaster />
       <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-      </Routes>
+      <main className="max-w-6xl mx-auto px-4">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/app" element={<ModuleInteraction />} />
+        </Routes>
+      </main>
 
       {/* <div>
         <img

@@ -7,7 +7,7 @@ const Navbar = () => {
         mod<span className="font-instrument text-primary">Hub</span>
       </Link>
       <Link
-        to="/"
+        to="/app"
         className="px-4 py-2 bg-primary text-dark rounded-full font-medium"
       >
         Try Now
