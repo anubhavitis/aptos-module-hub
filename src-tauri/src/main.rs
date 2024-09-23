@@ -17,7 +17,8 @@ fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             shell::account_modules,
-            shell::publish_to_devnet
+            shell::publish_to_devnet,
+            shell::get_account_details,
         ])
         .setup(|app| {
             let window = app.get_window("main").unwrap();

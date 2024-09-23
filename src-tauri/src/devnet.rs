@@ -126,6 +126,13 @@ pub fn add_aptos_framework_dependecies(toml: &mut Value) -> Result<(), Error> {
     Ok(())
 }
 
+pub fn get_toml(path: &PathBuf, file_name: &str) -> Result<Value, Error> {
+    let toml_path = path.join(file_name);
+    let file = fs::read_to_string(toml_path).expect("Failed to open the file");
+    let toml_parsed: Value = file.parse().expect("Failed to parse toml file");
+    Ok(toml_parsed)
+}
+
 pub fn edit_move_toml(path: &PathBuf, pkg_name: String) -> Result<bool, Error> {
     let account_address = get_devnet_account(path).expect("failed to get account address");
 
