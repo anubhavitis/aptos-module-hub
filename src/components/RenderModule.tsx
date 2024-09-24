@@ -7,7 +7,7 @@ const RenderModule = ({
 }) => {
   return (
     <div className="px-5 py-2 rounded-lg border font-semibold flex flex-col gap-2 divide-y">
-      <button className="rounded-lg  font-semibold flex items-center gap-2 justify-center w-min">
+      <button className="rounded-lg text-blue-500 font-semibold flex items-center gap-2 justify-center w-min">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="w-5"

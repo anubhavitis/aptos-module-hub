@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import "./App.css";
 import FindModule from "./components/FindModule";
@@ -9,6 +9,7 @@ function App() {
   const [pkgName, setPkgName] = useState("");
   const [contractAddress, setContractAddress] = useState("");
   const [hostingResponse, setHostingResponse] = useState("");
+  const [userAccount, setUserAccount] = useState({});
 
   const [moduleWithFunctions, setModuleWithFunctions] = useState<
     {
@@ -30,6 +31,19 @@ function App() {
       console.error("Error publishing to devnet:", error);
     }
   }
+
+  async function getUserAccount() {
+    try {
+      const account: string = await invoke("get_account_details");
+      console.log("account: ", account);
+    } catch (error) {
+      console.error("Error getting user account:", error);
+    }
+  }
+
+  useEffect(() => {
+    getUserAccount();
+  }, []);
 
   return (
     <div className="container mx-auto my-10">
