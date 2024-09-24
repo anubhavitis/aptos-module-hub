@@ -3,12 +3,19 @@ import { invoke } from "@tauri-apps/api/tauri";
 import "./App.css";
 import FindModule from "./components/FindModule";
 import PackageList from "./components/PackageList";
+import { IPublicGame } from "./components/RenderFunctions";
 
 function App() {
   const [pkgName, setPkgName] = useState("");
   const [contractAddress, setContractAddress] = useState("");
-  const [modules, setModules] = useState<string[]>([]);
   const [hostingResponse, setHostingResponse] = useState("");
+
+  const [moduleWithFunctions, setModuleWithFunctions] = useState<
+    {
+      module_name: string;
+      fns: IPublicGame[];
+    }[]
+  >([]);
 
   async function hostToDevnetHandler() {
     console.log(`account: ${contractAddress} pkg_name: ${pkgName}`);
@@ -31,13 +38,13 @@ function App() {
       </h1>
       <FindModule
         setPkgName={setPkgName}
-        setModules={setModules}
         contractAddress={contractAddress}
         setContractAddress={setContractAddress}
+        setModuleWithFunctions={setModuleWithFunctions}
       />
       <PackageList
         pkg={pkgName}
-        modules={modules}
+        modules={moduleWithFunctions}
         hostToDevnetHandler={hostToDevnetHandler}
         hostingResponse={hostingResponse}
       />

@@ -1,41 +1,65 @@
 import { invoke } from "@tauri-apps/api";
-import { useState } from "react";
-import Loader from "./Loader";
+import { IPublicGame } from "./RenderFunctions";
 
 const FindModule = ({
   setPkgName,
-  setModules,
   contractAddress,
   setContractAddress,
+  setModuleWithFunctions,
 }: {
   setPkgName: (pkgName: string) => void;
-  setModules: (modules: string[]) => void;
   contractAddress: string;
   setContractAddress: (contractAddress: string) => void;
+  setModuleWithFunctions: React.Dispatch<
+    React.SetStateAction<
+      {
+        module_name: string;
+        fns: IPublicGame[];
+      }[]
+    >
+  >;
 }) => {
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
 
   async function getModule() {
     if (!contractAddress) {
       return;
     }
-    setLoading(true);
     try {
       const resp: string[] = await invoke("account_modules", {
         account: contractAddress,
       });
       console.log("response received is: ", resp);
 
-      let respModules: string[] = resp[1].split(",");
       setPkgName(resp[0]);
-      setModules(respModules);
     } catch (error) {
       console.error("Error executing shell command:", error);
       setPkgName("Failed to execute shell command.");
     } finally {
-      setLoading(false);
     }
   }
+
+  const getModuleWithFunctions = async () => {
+    const apiHost = "https://api.mainnet.aptoslabs.com/v1";
+    const url = `${apiHost}/accounts/${contractAddress}/modules`;
+
+    fetch(url)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.length > 0) {
+          const moduleWithFunctions = data.map((module: any) => {
+            return {
+              module_name: module.abi.name,
+              fns: module.abi.exposed_functions,
+            };
+          });
+          setModuleWithFunctions(moduleWithFunctions);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching modules:", error);
+      });
+  };
   return (
     <div className="flex flex-col mt-10">
       <p className="text-2xl font-semibold">
@@ -50,11 +74,13 @@ const FindModule = ({
       />
 
       <button
-        disabled={loading}
-        onClick={getModule}
+        onClick={() => {
+          getModule();
+          getModuleWithFunctions();
+        }}
         className="bg-black text-white px-4 py-2.5 rounded-lg mt-4 w-36 flex justify-center items-center font-medium"
       >
-        {loading ? <Loader /> : "Get Module"}
+        Get Module
       </button>
     </div>
   );
