@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use serde_yaml;
+use std::collections::HashMap;
 use std::fs;
 use std::fs::File;
 use std::io::{Error, ErrorKind, Read};
@@ -35,13 +36,18 @@ fn read_yaml(file_path: &PathBuf) -> Result<Profiles, serde_yaml::Error> {
     Ok(profiles)
 }
 
-pub fn get_devnet_account(path: &PathBuf) -> Result<String, Error> {
+pub fn get_devnet_account(path: &PathBuf) -> Result<HashMap<String, String>, Error> {
     let yaml_loc = path.join(".aptos").join("config.yaml");
     let yaml_resp = read_yaml(&yaml_loc);
     match yaml_resp {
         Ok(profiles) => {
             println!("Read YAML: {:?}", profiles);
-            Ok(profiles.profiles.default.account)
+            let default_profile = profiles.profiles.default;
+            let mut resp = HashMap::new();
+            resp.insert("account".to_string(), default_profile.account);
+            resp.insert("public_key".to_string(), default_profile.public_key);
+            resp.insert("private_key".to_string(), default_profile.private_key);
+            Ok(resp)
         }
         Err(e) => Err(Error::new(ErrorKind::Other, e)),
     }
@@ -126,15 +132,11 @@ pub fn add_aptos_framework_dependecies(toml: &mut Value) -> Result<(), Error> {
     Ok(())
 }
 
-pub fn get_toml(path: &PathBuf, file_name: &str) -> Result<Value, Error> {
-    let toml_path = path.join(file_name);
-    let file = fs::read_to_string(toml_path).expect("Failed to open the file");
-    let toml_parsed: Value = file.parse().expect("Failed to parse toml file");
-    Ok(toml_parsed)
-}
-
 pub fn edit_move_toml(path: &PathBuf, pkg_name: String) -> Result<bool, Error> {
-    let account_address = get_devnet_account(path).expect("failed to get account address");
+    let account_details = get_devnet_account(path).expect("failed to get account address");
+    let account_address = account_details
+        .get("account")
+        .expect("failed to get account address");
 
     let toml_path = path.join(pkg_name).join("Move.toml");
     println!("toml Path is {:?}", toml_path);

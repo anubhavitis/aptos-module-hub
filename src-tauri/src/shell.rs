@@ -85,31 +85,9 @@ pub fn publish_package(path: &PathBuf, pkg_name: String) -> String {
 #[tauri::command]
 pub fn get_account_details(app_handle: tauri::AppHandle) -> HashMap<String, String> {
     let app_dir = app_handle.path_resolver().app_local_data_dir().unwrap();
-    let app_dir = app_dir
-        .join("accounts")
-        .join(APTOS_DEVNET_PATH)
-        .join(".aptos");
+    let app_dir = app_dir.join("accounts").join(APTOS_DEVNET_PATH);
 
-    let parsed_toml = devnet::get_toml(&app_dir, "Move.toml").expect("failed to get toml");
-
-    // convert parsed toml to hashmap
-    let mut account_details = HashMap::new();
-    let details = parsed_toml.as_table().unwrap();
-    let profiles = details["profiles"].as_table().unwrap();
-    let default = profiles["default"].as_table().unwrap();
-
-    account_details.insert(
-        "account".to_string(),
-        default["account"].as_str().unwrap().to_string(),
-    );
-    account_details.insert(
-        "public_key".to_string(),
-        default["public_key"].as_str().unwrap().to_string(),
-    );
-    account_details.insert(
-        "private_key".to_string(),
-        default["private_key"].as_str().unwrap().to_string(),
-    );
+    let account_details = devnet::get_devnet_account(&app_dir).expect("failed to get toml");
 
     account_details
 }
