@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { invoke } from "@tauri-apps/api/tauri";
+import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 import FindModule from "./components/FindModule";
 import PackageList from "./components/PackageList";
@@ -23,18 +23,16 @@ function App() {
     public_key: "",
   });
   const [deployedAddress, setDeployedAddress] = useState("");
-
   const [moduleWithFunctions, setModuleWithFunctions] = useState<
     {
       module_name: string;
       fns: IPublicGame[];
     }[]
   >([]);
-
   async function hostToDevnetHandler() {
     console.log(`account: ${contractAddress} pkg_name: ${pkgName}`);
     try {
-      const resp = await invoke("publish_to_devnet", {
+      const resp: string = await invoke("publish_to_devnet", {
         account: contractAddress,
         pkgName,
       });
@@ -51,7 +49,6 @@ function App() {
     const balance = await getAccountInfo(userAccount.account);
     setBalance(balance);
   };
-
   async function getUserAccount() {
     try {
       const details: IUserAccount = await invoke("get_account_details");
@@ -84,6 +81,7 @@ function App() {
           </p>
         </div>
       </div>
+
       <div className="flex items-center justify-between mt-6">
         <p className="text-sm flex items-center gap-2">
           Account: {formatAddress(userAccount.account)}
@@ -101,6 +99,7 @@ function App() {
           Fund Account
         </button>
       </div>
+
       <FindModule
         setPkgName={setPkgName}
         contractAddress={contractAddress}
@@ -112,6 +111,7 @@ function App() {
         deployedAddress={deployedAddress}
         hostingResponse={hostingResponse}
       />
+
       <PackageList
         pkg={pkgName}
         modules={moduleWithFunctions}
