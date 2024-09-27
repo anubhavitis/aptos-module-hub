@@ -1,3 +1,5 @@
+use tauri::Manager;
+
 use crate::devnet;
 use std::{collections::HashMap, io::Write, path::PathBuf, process::Command};
 
@@ -84,7 +86,7 @@ pub fn publish_package(path: &PathBuf, pkg_name: String) -> String {
 
 #[tauri::command]
 pub fn get_account_details(app_handle: tauri::AppHandle) -> HashMap<String, String> {
-    let app_dir = app_handle.path_resolver().app_local_data_dir().unwrap();
+    let app_dir = app_handle.path().app_local_data_dir().unwrap();
     let app_dir = app_dir.join("accounts").join(APTOS_DEVNET_PATH);
 
     let account_details = devnet::get_devnet_account(&app_dir).expect("failed to get toml");
@@ -98,7 +100,7 @@ pub fn publish_to_devnet(
     account: String,
     pkg_name: String,
 ) -> String {
-    let app_dir = app_handle.path_resolver().app_local_data_dir().unwrap();
+    let app_dir = app_handle.path().app_local_data_dir().unwrap();
     let app_dir = app_dir.join("accounts");
     // Download the package
     let downloaded = download_package(&app_dir, account.clone(), pkg_name.clone());
@@ -118,7 +120,7 @@ pub fn publish_to_devnet(
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
 pub fn account_modules(app_handle: tauri::AppHandle, account: String) -> Vec<String> {
-    let app_dir = app_handle.path_resolver().app_local_data_dir().unwrap();
+    let app_dir = app_handle.path().app_local_data_dir().unwrap();
     let app_dir = app_dir.join("accounts");
 
     let cmd = format!("aptos move list --account {}", account);
