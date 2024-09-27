@@ -1,9 +1,12 @@
+import { IUserAccount } from "../App";
 import RenderFunctions, { IPublicGame } from "./RenderFunctions";
 
 const RenderModule = ({
   module,
+  userAccount,
 }: {
   module: { module_name: string; fns: IPublicGame[] };
+  userAccount: IUserAccount;
 }) => {
   return (
     <div className="px-5 py-2 rounded-lg border font-semibold flex flex-col gap-2 divide-y">
@@ -28,7 +31,7 @@ const RenderModule = ({
       <p className="text-sm text-gray-500 pt-3">
         {module.fns.length} functions
       </p>
-      <RenderFunctions functions={module.fns} />
+      <RenderFunctions functions={module.fns} userAccount={userAccount} />
     </div>
   );
 };

@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { aptosClient } from "../utils/util";
+import { IUserAccount } from "../App";
+import { EntryFunctionPayloadResponse } from "@aptos-labs/ts-sdk";
 
 export interface IPublicGame {
   name: string;
@@ -10,9 +13,29 @@ export interface IPublicGame {
   return: any[];
 }
 
-const RenderFunctions = ({ functions }: { functions: IPublicGame[] }) => {
+const RenderFunctions = ({
+  functions,
+  userAccount,
+}: {
+  functions: IPublicGame[];
+  userAccount: IUserAccount;
+}) => {
   const [selectedFunction, setSelectedFunction] = useState("");
-  const [inputValues, setInputValues] = useState<{ [key: string]: string }>({});
+  const [executionStatus, setExecutionStatus] = useState<string | null>(null);
+  const [inputValues, setInputValues] = useState<{
+    [key: string]: string | boolean;
+  }>({ hasSigner: false });
+
+  useEffect(() => {
+    if (selectedFunction) {
+      const selectedFunctionData = functions.find(
+        (fn) => fn.name === selectedFunction
+      );
+      const hasSigner =
+        selectedFunctionData?.params.includes("&signer") || false;
+      setInputValues((prevValues) => ({ ...prevValues, hasSigner }));
+    }
+  }, [selectedFunction, functions]);
 
   const handleInputChange = (index: number, value: string) => {
     setInputValues((prevValues) => {
@@ -29,7 +52,7 @@ const RenderFunctions = ({ functions }: { functions: IPublicGame[] }) => {
     if (param === "u64") {
       inputType = "number";
     } else if (param === "&signer") {
-      return null; // Signer is handled by the wallet
+      return null;
     } else if (param.startsWith("vector<")) {
       inputType = "text";
       placeholder = `${param} (comma-separated values)`;
@@ -53,8 +76,55 @@ const RenderFunctions = ({ functions }: { functions: IPublicGame[] }) => {
     (fn) => fn.name === selectedFunction
   );
 
-  const handleExecute = () => {
+  const handleExecute = async () => {
+    setExecutionStatus("Executing...");
     console.log("inputValues", inputValues);
+    if (inputValues.hasSigner) {
+      console.log("This function requires a signer.");
+    }
+
+    try {
+      if (!selectedFunctionData) throw new Error("No function selected");
+
+      const functionArguments = selectedFunctionData.params.map(
+        (param, index) => {
+          if (param === "&signer") return userAccount.account;
+          if (param === "u64") return BigInt(inputValues[index] as string);
+          if (param.startsWith("vector<")) {
+            // Assuming vector of strings for simplicity
+            return (inputValues[index] as string)
+              .split(",")
+              .map((v) => v.trim());
+          }
+          return inputValues[index] as string;
+        }
+      );
+
+      //  const payload: EntryFunctionPayloadResponse = {
+      //    function: `${moduleAddress}::${selectedFunction}`,
+      //    type_arguments: [], // Assuming no type arguments for simplicity
+      //    arguments: functionArguments,
+      //  };
+
+      //  const transaction = await aptosClient.generateTransaction({
+      //    sender: AccountAddress.from(userAccount.address),
+      //    data: payload,
+      //  });
+
+      //  const pendingTransaction = await aptos.signAndSubmitTransaction({
+      //    signer: userAccount, // Assuming userAccount has the necessary signing methods
+      //    transaction,
+      //  });
+
+      //  const response = await aptos.waitForTransaction({
+      //    transactionHash: pendingTransaction.hash,
+      //  });
+
+      //  setExecutionStatus(`Transaction successful! Hash: ${response.hash}`);
+    } catch (error) {
+      console.error("Error executing function:", error);
+      setExecutionStatus(`Error: ${(error as Error).message}`);
+    }
   };
 
   return (

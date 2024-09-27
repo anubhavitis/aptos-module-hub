@@ -6,6 +6,11 @@ const FindModule = ({
   contractAddress,
   setContractAddress,
   setModuleWithFunctions,
+  hostToDevnetHandler,
+  pkgName,
+  setDeployedAddress,
+  deployedAddress,
+  hostingResponse,
 }: {
   setPkgName: (pkgName: string) => void;
   contractAddress: string;
@@ -18,6 +23,11 @@ const FindModule = ({
       }[]
     >
   >;
+  hostToDevnetHandler: () => void;
+  pkgName: string;
+  setDeployedAddress: (deployedAddress: string) => void;
+  deployedAddress: string;
+  hostingResponse: string;
 }) => {
   // const [loading, setLoading] = useState(false);
 
@@ -82,6 +92,30 @@ const FindModule = ({
       >
         Get Module
       </button>
+
+      <div className="border rounded-xl p-8 bg-gray-50 mt-10">
+        <p className="text-lg font-semibold">
+          You can deploy it on{" "}
+          <span className="italic text-blue-500">Devnet</span>
+        </p>
+
+        <button
+          onClick={hostToDevnetHandler}
+          disabled={!pkgName || !contractAddress || deployedAddress?.length > 0}
+          className="mt-5 w-28 font-semibold px-4 py-2 bg-blue-500 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Deploy
+        </button>
+      </div>
+
+      {hostingResponse && (
+        <div className="border rounded-xl p-8 bg-gray-50 mt-10">
+          <p className="text-lg font-semibold">
+            Hosting Response:{" "}
+            <span className="italic text-blue-500">{hostingResponse}</span>
+          </p>
+        </div>
+      )}
     </div>
   );
 };
