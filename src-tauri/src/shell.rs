@@ -74,6 +74,19 @@ pub fn download_package(path: &PathBuf, account: String, pkg_name: String) -> bo
     cmd_resp_str.contains("Download succeeded")
 }
 
+pub fn publish_package_skip(path: &PathBuf, pkg_name: String) -> String {
+    let cmd = format!(
+        "aptos move publish --package-dir {} --assume-yes --skip-fetch-latest-git-dep",
+        pkg_name
+    );
+
+    println!("{}", cmd);
+
+    let cmd_resp = cmd_handler(cmd, path.join(APTOS_DEVNET_PATH));
+    let cmd_resp_str = String::from_utf8_lossy(&cmd_resp);
+    cmd_resp_str.to_string()
+}
+
 pub fn publish_package(path: &PathBuf, pkg_name: String) -> String {
     let cmd = format!("aptos move publish --package-dir {} --assume-yes", pkg_name);
 
@@ -85,7 +98,7 @@ pub fn publish_package(path: &PathBuf, pkg_name: String) -> String {
 }
 
 #[tauri::command]
-pub fn get_account_details(app_handle: tauri::AppHandle) -> HashMap<String, String> {
+pub async fn get_account_details(app_handle: tauri::AppHandle) -> HashMap<String, String> {
     let app_dir = app_handle.path().app_local_data_dir().unwrap();
     let app_dir = app_dir.join("accounts").join(APTOS_DEVNET_PATH);
 
@@ -95,7 +108,7 @@ pub fn get_account_details(app_handle: tauri::AppHandle) -> HashMap<String, Stri
 }
 
 #[tauri::command]
-pub fn publish_to_devnet(
+pub async fn publish_to_devnet(
     app_handle: tauri::AppHandle,
     account: String,
     pkg_name: String,
@@ -114,12 +127,23 @@ pub fn publish_to_devnet(
         println!("toml edited successfully")
     }
 
-    publish_package(&app_dir, pkg_name)
+    let mut publish_resp = publish_package(&app_dir, pkg_name.clone());
+    // check if "Unable to resolve packages" exists in publish_resp
+    if publish_resp.contains("Unable to resolve packages") {
+        publish_resp = publish_package_skip(&app_dir, pkg_name.clone());
+    }
+
+    /*Previously installed CLI version 4.2.3, checking for updates CLI is up to date package size 13500 bytes
+    { "Result": { "transaction_hash": "0x42cd9470c4286951119c095fe8ce7854c366306b4bd152b5fef2aeca66b51b41", "gas_used": 88, "gas_unit_price": 100, "sender": "516e4c995b2980e4686e7863863df53fadb8e0e1422f63e2a0c5799870adab99", "sequence_number": 1, "success": true, "timestamp_us": 1728665926233725, "version": 9560896, "vm_status": "Executed successfully" } } */
+
+    // remove content of publish_resp till first {
+    let resp = publish_resp.split('{').collect::<Vec<&str>>().join("{");
+    resp
 }
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
-pub fn account_modules(app_handle: tauri::AppHandle, account: String) -> Vec<String> {
+pub async fn account_modules(app_handle: tauri::AppHandle, account: String) -> Vec<String> {
     let app_dir = app_handle.path().app_local_data_dir().unwrap();
     let app_dir = app_dir.join("accounts");
 
