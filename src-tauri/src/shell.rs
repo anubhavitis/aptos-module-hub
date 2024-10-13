@@ -46,17 +46,21 @@ pub fn cmd_handler(command: String, path: PathBuf) -> Vec<u8> {
         .expect("Failed to run the command");
 
     println!("Command output: {:?}", output);
+    
+    // String::from_utf8_lossy(&output.stdout).to_string()
 
-    if output.status.success() {
-        output.stdout
-    } else {
-        format!(
-            "Error executing command: {}",
-            String::from_utf8_lossy(&output.stderr)
-        )
-        .as_bytes()
-        .to_vec()
-    }
+    
+
+    // if output.status.success() {
+    //     output.stdout
+    // } else {
+    //     format!(
+    //         "Error executing command: {}",
+    //         String::from_utf8_lossy(&output.stderr)
+    //     )
+    //     .as_bytes()
+    //     .to_vec()
+    // }
 }
 
 pub fn download_package(path: &PathBuf, account: String, pkg_name: String) -> bool {
@@ -128,6 +132,7 @@ pub async fn publish_to_devnet(
     }
 
     let mut publish_resp = publish_package(&app_dir, pkg_name.clone());
+    println!("publish_resp: {}", publish_resp.clone());
     // check if "Unable to resolve packages" exists in publish_resp
     if publish_resp.contains("Unable to resolve packages") {
         publish_resp = publish_package_skip(&app_dir, pkg_name.clone());

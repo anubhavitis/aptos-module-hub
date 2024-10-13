@@ -1,5 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { IPublicGame } from "./RenderFunctions";
+import { useState } from "react";
+import Loader from "./Loader";
 
 const FindModule = ({
   setPkgName,
@@ -29,7 +31,7 @@ const FindModule = ({
   deployedAddress: string;
   hostingResponse: string;
 }) => {
-  // const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   async function getModule() {
     if (!contractAddress) {
@@ -52,7 +54,7 @@ const FindModule = ({
   const getModuleWithFunctions = async () => {
     const apiHost = "https://api.mainnet.aptoslabs.com/v1";
     const url = `${apiHost}/accounts/${contractAddress}/modules`;
-
+    setLoading(true);
     fetch(url)
       .then((response) => response.json())
       .then((data) => {
@@ -68,6 +70,9 @@ const FindModule = ({
       })
       .catch((error) => {
         console.error("Error fetching modules:", error);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
   return (
@@ -88,9 +93,10 @@ const FindModule = ({
           getModule();
           getModuleWithFunctions();
         }}
-        className="bg-black text-white px-4 py-2.5 rounded-lg mt-4 w-36 flex justify-center items-center font-medium"
+        disabled={loading}
+        className="bg-black text-white px-4 py-2.5 rounded-xl mt-4 w-36 flex justify-center items-center font-medium"
       >
-        Get Module
+        {loading ? <Loader /> : "Get Module"}
       </button>
 
       <div className="border rounded-xl p-8 bg-gray-50 mt-10">

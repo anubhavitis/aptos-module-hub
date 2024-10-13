@@ -32,13 +32,13 @@ function App() {
   async function hostToDevnetHandler() {
     console.log(`account: ${contractAddress} pkg_name: ${pkgName}`);
     try {
-      const resp: string = await invoke("publish_to_devnet", {
+      const resp = await invoke("publish_to_devnet", {
         account: contractAddress,
         pkgName,
       });
       console.log("response received is: ", resp);
       // console.log("parsed response is: ", parsedResponse);
-      setHostingResponse(resp);
+      // setHostingResponse(resp);
     } catch (error) {
       console.error("Error publishing to devnet:", error);
     }
@@ -76,7 +76,7 @@ function App() {
           Mod<span className="italic text-blue-500">Hub</span>
         </h1>
         <div className="flex flex-col gap-4">
-          <p className="border border-gray-300 rounded-md p-2">
+          <p className="border border-gray-300 rounded-xl p-2 text-sm">
             Balance: {balance} APT
           </p>
         </div>
@@ -86,15 +86,18 @@ function App() {
         <p className="text-sm flex items-center gap-2">
           Account: {formatAddress(userAccount.account)}
           <button
-            className="bg-blue-500 text-white py-1.5 px-3 rounded-md text-sm"
+            className="bg-blue-500 text-white py-1.5 px-3 rounded-xl text-sm"
             onClick={() => navigator.clipboard.writeText(userAccount.account)}
           >
             Copy
           </button>
         </p>
         <button
-          onClick={() => fundAccount(userAccount.account, 100000000)}
-          className="bg-blue-500 text-white py-2 px-4 rounded-md text-sm"
+          onClick={async () => {
+            await fundAccount(userAccount.account, 100000000);
+            fetchBalance();
+          }}
+          className="bg-blue-500 text-white py-2 px-4 rounded-xl text-sm"
         >
           Fund Account
         </button>
