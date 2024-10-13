@@ -59,6 +59,24 @@ pub fn cmd_handler(command: String, path: PathBuf) -> Vec<u8> {
     }
 }
 
+pub fn cmd_handler_string(command: String, path: PathBuf) -> String {
+    dbg!(
+        "Executing command: {}",
+        command.clone(),
+        " in path: {:?}",
+        path.clone()
+    );
+    let output = Command::new("sh")
+        .current_dir(path)
+        .arg("-c")
+        .arg(command)
+        .output()
+        .map_err(|e| format!("Error executing command: {}", e))
+        .expect("Failed to run the command");
+
+    format!("{:?}", output)
+}
+
 pub fn download_package(path: &PathBuf, account: String, pkg_name: String) -> bool {
     let cmd: String = format!(
         "aptos move download --account {} --package {} --output-dir ../{}/",
@@ -82,9 +100,8 @@ pub fn publish_package_skip(path: &PathBuf, pkg_name: String) -> String {
 
     println!("{}", cmd);
 
-    let cmd_resp = cmd_handler(cmd, path.join(APTOS_DEVNET_PATH));
-    let cmd_resp_str = String::from_utf8_lossy(&cmd_resp);
-    cmd_resp_str.to_string()
+    let cmd_resp_str = cmd_handler_string(cmd, path.join(APTOS_DEVNET_PATH));
+    cmd_resp_str
 }
 
 pub fn publish_package(path: &PathBuf, pkg_name: String) -> String {
@@ -92,9 +109,8 @@ pub fn publish_package(path: &PathBuf, pkg_name: String) -> String {
 
     println!("{}", cmd);
 
-    let cmd_resp = cmd_handler(cmd, path.join(APTOS_DEVNET_PATH));
-    let cmd_resp_str = String::from_utf8_lossy(&cmd_resp);
-    cmd_resp_str.to_string()
+    let cmd_resp_str = cmd_handler_string(cmd, path.join(APTOS_DEVNET_PATH));
+    cmd_resp_str
 }
 
 #[tauri::command]
