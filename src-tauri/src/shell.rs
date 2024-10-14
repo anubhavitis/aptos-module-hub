@@ -94,7 +94,7 @@ pub fn download_package(path: &PathBuf, account: String, pkg_name: String) -> bo
 
 pub fn publish_package_skip(path: &PathBuf, pkg_name: String) -> String {
     let cmd = format!(
-        "aptos move publish --package-dir {} --assume-yes --skip-fetch-latest-git-dep",
+        "aptos move publish --package-dir {} --assume-yes --skip-fetch-latest-git-deps",
         pkg_name
     );
 
