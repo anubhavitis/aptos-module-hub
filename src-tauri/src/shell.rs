@@ -51,16 +51,16 @@ pub fn cmd_handler(command: String, path: PathBuf) -> Vec<u8> {
 
     
 
-    // if output.status.success() {
-    //     output.stdout
-    // } else {
-    //     format!(
-    //         "Error executing command: {}",
-    //         String::from_utf8_lossy(&output.stderr)
-    //     )
-    //     .as_bytes()
-    //     .to_vec()
-    // }
+    if output.status.success() {
+        output.stdout
+    } else {
+        format!(
+            "Error executing command: {}",
+            String::from_utf8_lossy(&output.stderr)
+        )
+        .as_bytes()
+        .to_vec()
+    }
 }
 
 pub fn cmd_handler_string(command: String, path: PathBuf) -> String {

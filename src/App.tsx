@@ -36,7 +36,7 @@ function App() {
         account: contractAddress,
         pkgName,
       });
-      console.log("response received is: ", resp);
+      console.log("response received is in app.tsx: ", resp);
       // console.log("parsed response is: ", parsedResponse);
       // setHostingResponse(resp);
     } catch (error) {
