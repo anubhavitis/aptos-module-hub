@@ -4,9 +4,14 @@ import RenderFunctions, { IPublicGame } from "./RenderFunctions";
 const RenderModule = ({
   module,
   userAccount,
+  deployedInfo,
 }: {
   module: { module_name: string; fns: IPublicGame[] };
   userAccount: IUserAccount;
+  deployedInfo: {
+    tx_hash: string;
+    address: string;
+  };
 }) => {
   return (
     <div className="px-5 py-2 rounded-lg border font-semibold flex flex-col gap-2 divide-y">
@@ -31,7 +36,11 @@ const RenderModule = ({
       <p className="text-sm text-gray-500 pt-3">
         {module.fns.length} functions
       </p>
-      <RenderFunctions functions={module.fns} userAccount={userAccount} />
+      <RenderFunctions
+        functions={module.fns}
+        userAccount={userAccount}
+        deployedInfo={deployedInfo}
+      />
     </div>
   );
 };

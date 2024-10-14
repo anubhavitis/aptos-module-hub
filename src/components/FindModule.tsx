@@ -10,9 +10,9 @@ const FindModule = ({
   setModuleWithFunctions,
   hostToDevnetHandler,
   pkgName,
-  setDeployedAddress,
-  deployedAddress,
+  deployedInfo,
   hostingResponse,
+  deploying,
 }: {
   setPkgName: (pkgName: string) => void;
   contractAddress: string;
@@ -27,9 +27,12 @@ const FindModule = ({
   >;
   hostToDevnetHandler: () => void;
   pkgName: string;
-  setDeployedAddress: (deployedAddress: string) => void;
-  deployedAddress: string;
+  deployedInfo: {
+    tx_hash: string;
+    address: string;
+  };
   hostingResponse: string;
+  deploying: boolean;
 }) => {
   const [loading, setLoading] = useState(false);
 
@@ -105,20 +108,30 @@ const FindModule = ({
           <span className="italic text-blue-500">Devnet</span>
         </p>
 
-        <button
-          onClick={hostToDevnetHandler}
-          disabled={!pkgName || !contractAddress || deployedAddress?.length > 0}
-          className="mt-5 w-28 font-semibold px-4 py-2 bg-blue-500 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Deploy
-        </button>
+        {!deployedInfo?.tx_hash && (
+          <button
+            onClick={hostToDevnetHandler}
+            disabled={
+              !pkgName || !contractAddress || deployedInfo?.tx_hash?.length > 0
+            }
+            className="mt-5 w-28 font-semibold px-4 py-2 bg-blue-500 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {deploying ? <Loader /> : "Deploy"}
+          </button>
+        )}
       </div>
 
-      {hostingResponse && (
+      {deployedInfo?.tx_hash?.length > 0 && (
         <div className="border rounded-xl p-8 bg-gray-50 mt-10">
           <p className="text-lg font-semibold">
-            Hosting Response:{" "}
-            <span className="italic text-blue-500">{hostingResponse}</span>
+            Deployed on Devnet:{" "}
+            <a
+              href={`https://aptoscan.com/transaction/${deployedInfo?.tx_hash}?network=devnet`}
+              target="_blank"
+              className="italic text-blue-500"
+            >
+              {deployedInfo.tx_hash?.slice(0, 20)}...
+            </a>
           </p>
         </div>
       )}

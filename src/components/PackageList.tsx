@@ -6,6 +6,7 @@ const PackageList = ({
   pkg,
   modules,
   userAccount,
+  deployedInfo,
 }: {
   pkg: string;
   modules: {
@@ -13,6 +14,10 @@ const PackageList = ({
     fns: IPublicGame[];
   }[];
   userAccount: IUserAccount;
+  deployedInfo: {
+    tx_hash: string;
+    address: string;
+  };
 }) => {
   if (modules?.length === 0) {
     return null;
@@ -26,7 +31,12 @@ const PackageList = ({
       <p className="font-semibold text-gray-500 mt-4 ">All Modules</p>
       <div className="flex flex-col gap-5 mt-2">
         {modules.map((module, i) => (
-          <RenderModule key={i} module={module} userAccount={userAccount} />
+          <RenderModule
+            key={i}
+            module={module}
+            userAccount={userAccount}
+            deployedInfo={deployedInfo}
+          />
         ))}
       </div>
     </div>

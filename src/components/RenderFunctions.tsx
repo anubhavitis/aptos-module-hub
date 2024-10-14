@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { aptosClient } from "../utils/util";
+import { aptosClient, getAccountFromPrivateKey } from "../utils/util";
 import { IUserAccount } from "../App";
-import { EntryFunctionPayloadResponse } from "@aptos-labs/ts-sdk";
+import { AccountAddress } from "@aptos-labs/ts-sdk";
 
 export interface IPublicGame {
   name: string;
@@ -16,9 +16,14 @@ export interface IPublicGame {
 const RenderFunctions = ({
   functions,
   userAccount,
+  deployedInfo,
 }: {
   functions: IPublicGame[];
   userAccount: IUserAccount;
+  deployedInfo: {
+    tx_hash: string;
+    address: string;
+  };
 }) => {
   const [selectedFunction, setSelectedFunction] = useState("");
   const [executionStatus, setExecutionStatus] = useState<string | null>(null);
@@ -88,8 +93,15 @@ const RenderFunctions = ({
 
       const functionArguments = selectedFunctionData.params.map(
         (param, index) => {
-          if (param === "&signer") return userAccount.account;
-          if (param === "u64") return BigInt(inputValues[index] as string);
+          // if (param === "&signer") return userAccount.account;
+          if (param === "&signer") return;
+          if (param === "u64") {
+            const value = inputValues[index] as string;
+            if (!value || isNaN(Number(value))) {
+              throw new Error(`Invalid u64 value: ${value}`);
+            }
+            return BigInt(Math.floor(Number(value)));
+          }
           if (param.startsWith("vector<")) {
             // Assuming vector of strings for simplicity
             return (inputValues[index] as string)
@@ -100,27 +112,39 @@ const RenderFunctions = ({
         }
       );
 
-      //  const payload: EntryFunctionPayloadResponse = {
-      //    function: `${moduleAddress}::${selectedFunction}`,
-      //    type_arguments: [], // Assuming no type arguments for simplicity
-      //    arguments: functionArguments,
-      //  };
+      console.log(
+        "functionArguments",
+        functionArguments,
+        selectedFunction,
+        deployedInfo
+      );
+      const tx = await aptosClient.transaction.build.simple({
+        sender: AccountAddress.from(userAccount.account),
+        data: {
+          function: `${deployedInfo.address}::dragon::${selectedFunction}`,
+          functionArguments: functionArguments,
+        },
+      });
 
-      //  const transaction = await aptosClient.generateTransaction({
-      //    sender: AccountAddress.from(userAccount.address),
-      //    data: payload,
-      //  });
+      console.log("simulated tx", tx);
 
-      //  const pendingTransaction = await aptos.signAndSubmitTransaction({
-      //    signer: userAccount, // Assuming userAccount has the necessary signing methods
-      //    transaction,
-      //  });
+      const account = await getAccountFromPrivateKey(userAccount.private_key);
+      console.log("account", account);
 
-      //  const response = await aptos.waitForTransaction({
-      //    transactionHash: pendingTransaction.hash,
-      //  });
+      const pendingTransaction = await aptosClient.signAndSubmitTransaction({
+        signer: account,
+        transaction: tx,
+      });
 
-      //  setExecutionStatus(`Transaction successful! Hash: ${response.hash}`);
+      console.log("pendingTransaction", pendingTransaction);
+
+      const response = await aptosClient.waitForTransaction({
+        transactionHash: pendingTransaction.hash,
+      });
+
+      console.log("response", response);
+
+      setExecutionStatus(`Transaction successful! Hash: ${response.hash}`);
     } catch (error) {
       console.error("Error executing function:", error);
       setExecutionStatus(`Error: ${(error as Error).message}`);

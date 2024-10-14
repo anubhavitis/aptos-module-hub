@@ -6,6 +6,41 @@ import PackageList from "./components/PackageList";
 import { IPublicGame } from "./components/RenderFunctions";
 import { formatAddress, fundAccount, getAccountInfo } from "./utils/util";
 
+function extractResultObject(apiResponse: string) {
+  // Find the position of the JSON object start
+  const jsonStart = apiResponse.indexOf('stdout: "') + 9;
+  const jsonEnd = apiResponse.lastIndexOf(
+    '"',
+    apiResponse.lastIndexOf("stderr:") - 1
+  );
+
+  if (jsonStart !== -1 && jsonEnd !== -1) {
+    try {
+      // Extract the JSON string and unescape it
+      const jsonString = apiResponse
+        .slice(jsonStart, jsonEnd)
+        .replace(/\\n/g, "\n")
+        .replace(/\\"/g, '"');
+
+      // Find the actual JSON object within the unescaped string
+      const match = jsonString.match(/\{[\s\S]*\}/);
+
+      if (match) {
+        // Parse the JSON string
+        const jsonData = JSON.parse(match[0]);
+
+        // Return the Result object
+        return jsonData.Result;
+      }
+    } catch (error) {
+      console.error("Error parsing JSON:", error);
+    }
+  }
+
+  console.error("No valid JSON found in the response");
+  return null;
+}
+
 export interface IUserAccount {
   account: string;
   private_key: string;
@@ -22,25 +57,35 @@ function App() {
     private_key: "",
     public_key: "",
   });
-  const [deployedAddress, setDeployedAddress] = useState("");
+  const [deployedInfo, setDeployedInfo] = useState({
+    tx_hash: "",
+    address: "",
+  });
   const [moduleWithFunctions, setModuleWithFunctions] = useState<
     {
       module_name: string;
       fns: IPublicGame[];
     }[]
   >([]);
+  const [deploying, setDeploying] = useState(false);
   async function hostToDevnetHandler() {
     console.log(`account: ${contractAddress} pkg_name: ${pkgName}`);
     try {
-      const resp = await invoke("publish_to_devnet", {
+      setDeploying(true);
+      let resp = (await invoke("publish_to_devnet", {
         account: contractAddress,
         pkgName,
-      });
+      })) as string;
       console.log("response received is in app.tsx: ", resp);
-      // console.log("parsed response is: ", parsedResponse);
-      // setHostingResponse(resp);
+      const result = extractResultObject(resp);
+      setDeployedInfo({
+        tx_hash: result.transaction_hash,
+        address: result.sender,
+      });
     } catch (error) {
       console.error("Error publishing to devnet:", error);
+    } finally {
+      setDeploying(false);
     }
   }
 
@@ -110,8 +155,8 @@ function App() {
         setModuleWithFunctions={setModuleWithFunctions}
         hostToDevnetHandler={hostToDevnetHandler}
         pkgName={pkgName}
-        setDeployedAddress={setDeployedAddress}
-        deployedAddress={deployedAddress}
+        deployedInfo={deployedInfo}
+        deploying={deploying}
         hostingResponse={hostingResponse}
       />
 
@@ -119,6 +164,7 @@ function App() {
         pkg={pkgName}
         modules={moduleWithFunctions}
         userAccount={userAccount}
+        deployedInfo={deployedInfo}
       />
     </div>
   );
