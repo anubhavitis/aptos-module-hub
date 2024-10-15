@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { aptosClient, getAccountFromPrivateKey } from "../utils/util";
 import { IUserAccount } from "../App";
 import { AccountAddress } from "@aptos-labs/ts-sdk";
+import Loader from "./Loader";
 
 export interface IPublicGame {
   name: string;
@@ -29,18 +30,20 @@ const RenderFunctions = ({
   const [executionStatus, setExecutionStatus] = useState<string | null>(null);
   const [inputValues, setInputValues] = useState<{
     [key: string]: string | boolean;
-  }>({ hasSigner: false });
+  }>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [txHash, setTxHash] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (selectedFunction) {
-      const selectedFunctionData = functions.find(
-        (fn) => fn.name === selectedFunction
-      );
-      const hasSigner =
-        selectedFunctionData?.params.includes("&signer") || false;
-      setInputValues((prevValues) => ({ ...prevValues, hasSigner }));
-    }
-  }, [selectedFunction, functions]);
+  // useEffect(() => {
+  //   if (selectedFunction) {
+  //     const selectedFunctionData = functions.find(
+  //       (fn) => fn.name === selectedFunction
+  //     );
+  //     const hasSigner =
+  //       selectedFunctionData?.params.includes("&signer") || false;
+  //     setInputValues((prevValues) => ({ ...prevValues, hasSigner }));
+  //   }
+  // }, [selectedFunction, functions]);
 
   const handleInputChange = (index: number, value: string) => {
     setInputValues((prevValues) => {
@@ -82,19 +85,16 @@ const RenderFunctions = ({
   );
 
   const handleExecute = async () => {
-    setExecutionStatus("Executing...");
+    setExecutionStatus(null);
+    setTxHash(null);
     console.log("inputValues", inputValues);
-    if (inputValues.hasSigner) {
-      console.log("This function requires a signer.");
-    }
 
     try {
       if (!selectedFunctionData) throw new Error("No function selected");
 
-      const functionArguments = selectedFunctionData.params.map(
-        (param, index) => {
-          // if (param === "&signer") return userAccount.account;
-          if (param === "&signer") return;
+      const functionArguments = selectedFunctionData.params
+        .filter((param) => param !== "&signer")
+        .map((param, index) => {
           if (param === "u64") {
             const value = inputValues[index] as string;
             if (!value || isNaN(Number(value))) {
@@ -109,8 +109,7 @@ const RenderFunctions = ({
               .map((v) => v.trim());
           }
           return inputValues[index] as string;
-        }
-      );
+        });
 
       console.log(
         "functionArguments",
@@ -118,6 +117,7 @@ const RenderFunctions = ({
         selectedFunction,
         deployedInfo
       );
+      setIsLoading(true);
       const tx = await aptosClient.transaction.build.simple({
         sender: AccountAddress.from(userAccount.account),
         data: {
@@ -143,11 +143,12 @@ const RenderFunctions = ({
       });
 
       console.log("response", response);
-
-      setExecutionStatus(`Transaction successful! Hash: ${response.hash}`);
+      setTxHash(response.hash);
     } catch (error) {
       console.error("Error executing function:", error);
       setExecutionStatus(`Error: ${(error as Error).message}`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -167,19 +168,39 @@ const RenderFunctions = ({
 
       {selectedFunction && (
         <div className="flex flex-wrap gap-2">
-          {selectedFunctionData?.params.map((param, i) => (
-            <div key={i} className="w-full">
-              {renderInputField(param, i)}
-            </div>
-          ))}
+          {selectedFunctionData?.params
+            .filter((param) => param !== "&signer")
+            .map((param, i) => (
+              <div key={i} className="w-full">
+                {renderInputField(param, i)}
+              </div>
+            ))}
           <button
             onClick={handleExecute}
-            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg"
+            className="mt-2 px-4 py-2 w-28 bg-blue-500 text-white rounded-xl disabled:opacity-50 flex justify-center items-center disabled:cursor-not-allowed"
+            disabled={isLoading}
           >
-            Execute
+            {isLoading ? <Loader /> : "Execute"}
           </button>
         </div>
       )}
+
+      {executionStatus ||
+        (txHash && (
+          <div className="mt-4 p-4 bg-gray-100 rounded-lg">
+            {txHash && <p>Transaction successful!</p>}
+            <a
+              href={`https://aptoscan.com/transaction/${txHash}?network=devnet`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500"
+            >
+              <span className="text-black/60">Tx Hash:</span>{" "}
+              {txHash?.slice(0, 10)}...{txHash?.slice(-4)}
+            </a>
+            {executionStatus && <p>{executionStatus}</p>}
+          </div>
+        ))}
     </div>
   );
 };

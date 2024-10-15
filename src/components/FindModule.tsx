@@ -102,24 +102,23 @@ const FindModule = ({
         {loading ? <Loader /> : "Get Module"}
       </button>
 
-      <div className="border rounded-xl p-8 bg-gray-50 mt-10">
-        <p className="text-lg font-semibold">
-          You can deploy it on{" "}
-          <span className="italic text-blue-500">Devnet</span>
-        </p>
-
-        {!deployedInfo?.tx_hash && (
+      {!deployedInfo?.tx_hash && (
+        <div className="border rounded-xl p-8 bg-gray-50 mt-10">
+          <p className="text-lg font-semibold">
+            You can deploy it on{" "}
+            <span className="italic text-blue-500">Devnet</span>
+          </p>
           <button
             onClick={hostToDevnetHandler}
             disabled={
               !pkgName || !contractAddress || deployedInfo?.tx_hash?.length > 0
             }
-            className="mt-5 w-28 font-semibold px-4 py-2 bg-blue-500 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            className="mt-5 w-28 font-semibold px-4 py-2 bg-blue-500 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
           >
             {deploying ? <Loader /> : "Deploy"}
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {deployedInfo?.tx_hash?.length > 0 && (
         <div className="border rounded-xl p-8 bg-gray-50 mt-10">
