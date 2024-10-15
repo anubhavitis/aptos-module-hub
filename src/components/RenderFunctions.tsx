@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { aptosClient, getAccountFromPrivateKey } from "../utils/util";
 import { IUserAccount } from "../App";
 import { AccountAddress } from "@aptos-labs/ts-sdk";
@@ -81,7 +81,7 @@ const RenderFunctions = ({
   };
 
   const selectedFunctionData = functions.find(
-    (fn) => fn.name === selectedFunction
+    (fn) => fn.name === selectedFunction,
   );
 
   const handleExecute = async () => {
@@ -115,7 +115,7 @@ const RenderFunctions = ({
         "functionArguments",
         functionArguments,
         selectedFunction,
-        deployedInfo
+        deployedInfo,
       );
       setIsLoading(true);
       const tx = await aptosClient.transaction.build.simple({

@@ -11,7 +11,7 @@ function extractResultObject(apiResponse: string) {
   const jsonStart = apiResponse.indexOf('stdout: "') + 9;
   const jsonEnd = apiResponse.lastIndexOf(
     '"',
-    apiResponse.lastIndexOf("stderr:") - 1
+    apiResponse.lastIndexOf("stderr:") - 1,
   );
 
   if (jsonStart !== -1 && jsonEnd !== -1) {
@@ -50,7 +50,6 @@ export interface IUserAccount {
 function App() {
   const [pkgName, setPkgName] = useState("");
   const [contractAddress, setContractAddress] = useState("");
-  const [hostingResponse, setHostingResponse] = useState("");
   const [balance, setBalance] = useState(0);
   const [userAccount, setUserAccount] = useState<IUserAccount>({
     account: "",
@@ -157,7 +156,6 @@ function App() {
         pkgName={pkgName}
         deployedInfo={deployedInfo}
         deploying={deploying}
-        hostingResponse={hostingResponse}
       />
 
       <PackageList

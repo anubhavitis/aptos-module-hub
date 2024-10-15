@@ -11,7 +11,6 @@ const FindModule = ({
   hostToDevnetHandler,
   pkgName,
   deployedInfo,
-  hostingResponse,
   deploying,
 }: {
   setPkgName: (pkgName: string) => void;
@@ -31,7 +30,6 @@ const FindModule = ({
     tx_hash: string;
     address: string;
   };
-  hostingResponse: string;
   deploying: boolean;
 }) => {
   const [loading, setLoading] = useState(false);
@@ -91,34 +89,30 @@ const FindModule = ({
         onChange={(e) => setContractAddress(e.currentTarget.value)}
       />
 
-      <button
-        onClick={() => {
-          getModule();
-          getModuleWithFunctions();
-        }}
-        disabled={loading}
-        className="bg-black text-white px-4 py-2.5 rounded-xl mt-4 w-36 flex justify-center items-center font-medium"
-      >
-        {loading ? <Loader /> : "Get Module"}
-      </button>
+      <div className="flex gap-4 mt-5">
+        <button
+          onClick={() => {
+            getModule();
+            getModuleWithFunctions();
+          }}
+          disabled={loading}
+          className="w-36 bg-black text-white px-4 py-2.5 rounded-xl flex justify-center items-center font-medium"
+        >
+          {loading ? <Loader /> : "Get Module"}
+        </button>
 
-      {!deployedInfo?.tx_hash && (
-        <div className="border rounded-xl p-8 bg-gray-50 mt-10">
-          <p className="text-lg font-semibold">
-            You can deploy it on{" "}
-            <span className="italic text-blue-500">Devnet</span>
-          </p>
+        {!deployedInfo?.tx_hash && (
           <button
             onClick={hostToDevnetHandler}
             disabled={
               !pkgName || !contractAddress || deployedInfo?.tx_hash?.length > 0
             }
-            className="mt-5 w-28 font-semibold px-4 py-2 bg-blue-500 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
+            className="w-28 font-semibold px-4 py-2.5 bg-blue-500 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
           >
             {deploying ? <Loader /> : "Deploy"}
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       {deployedInfo?.tx_hash?.length > 0 && (
         <div className="border rounded-xl p-8 bg-gray-50 mt-10">
